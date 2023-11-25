@@ -1,0 +1,47 @@
+# sumar numeros con punteros - funcion llamando a otra
+
+# #include <iostream.h>
+# int ip(int *x, int *y, int n){
+#  int i, sum;
+#  for(i=0, sum = 0; i < n; i++, x++, y++)
+#??sum += (*x)*(*y);  // sum += x[i]*y[i], sum = sum + x[0]*y[0] ---
+#  return sum;
+# }
+# 6+12+6+25+4 = 53
+# main(){
+#  int x[] = {2, 4, 3, 5, 1};
+#  int y[] = {3, 3, 2, 5, 4};
+#  int n = 5;
+#  cout<< ip(x,y,n);
+#}
+
+.data
+x: .word 2, 4, 3, 5, 1
+y: .word 3, 3, 2, 5, 4
+n: .word 5
+ 
+.text    
+.globl main
+main: 
+    la $a0, x		# carga direccion del vector x
+    la $a1, y
+    lw $a2, n		# $a2 = 5
+    jal ip		# llama a la funcion ip q retorna e imprime la suma en $v0
+    move $a0, $v0	# $a0 = $v0
+    li $v0, 1		# imprimimos en pantalla
+    syscall
+    li $v0, 10		# terminamos el programa
+    syscall
+    
+ip:   li $v0, 0   	# suma es $v0 -- $v0 = 0 (inicializamos $v0)
+      li $t3, 0 	# $t3 es i
+for:  bge $t3, $a2, ipx		# mientras (i > n) salta a la etiqueta ipx 
+      lw  $t0, 0($a0)     # cargo el valor en la pos i a $t0
+      lw  $t1, 0($a1)	  # cargo el valor en la pos i a $t1
+      mul $t2, $t1, $t0   # multiplicamos los valores de esas dos variables, guardamos en $t2	
+      add $v0, $v0, $t2	  # suma = suma + t2
+      addi $a0, $a0, 4	  # incrementamos los contadores de los vectores (4 bits)
+      addi $a1, $a1, 4
+      addi $t3, $t3, 1	  # i++
+      b for		# branch - salta a for (se repite)
+ipx:  jr $ra   		# devolver al main -- en $ra queda guardado la direccion de retorno
